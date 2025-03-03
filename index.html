@@ -3,128 +3,381 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loan EMI Calculator</title>
+    <title>Loan EMI Calculator | Piramal Finance Style</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #003370;
+            --secondary: #ff6536;
+            --dark-blue: #002550;
+            --light-blue: #eef6ff;
+            --text-dark: #212529;
+            --text-light: #6c757d;
+            --white: #ffffff;
+            --light-gray: #f8f9fa;
+            --border-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Montserrat', sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
+            color: var(--text-dark);
+            background-color: var(--light-gray);
             padding: 20px;
-            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+        
+        .header h1 {
+            font-weight: 700;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: var(--text-light);
+            font-size: 16px;
         }
         
         .calculator-container {
-            background-color: white;
-            border-radius: 10px;
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 35, 80, 0.1);
             padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            text-align: center;
-            color: #2c3e50;
             margin-bottom: 30px;
         }
         
         .input-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
         label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: var(--primary);
+            font-size: 15px;
         }
         
         input {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 14px;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(255, 101, 54, 0.2);
         }
         
         button {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--secondary);
+            color: var(--white);
             border: none;
-            padding: 12px 20px;
+            padding: 14px 20px;
             width: 100%;
-            border-radius: 4px;
+            border-radius: 8px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s ease;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         button:hover {
-            background-color: #2980b9;
+            background-color: #e55a2f;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 101, 54, 0.3);
         }
         
         .result {
             margin-top: 30px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
+            padding: 25px;
+            background-color: var(--light-blue);
+            border-radius: 10px;
             text-align: center;
             display: none;
+            border-left: 4px solid var(--primary);
         }
         
         .result.show {
             display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .emi-amount {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2c3e50;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
             margin: 15px 0;
         }
         
+        .result-details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .result-item {
+            flex: 1;
+            padding: 15px;
+        }
+        
+        .result-item p:first-child {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        
+        .result-item p:last-child {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
         .error {
-            color: #e74c3c;
+            color: #dc3545;
             margin-top: 5px;
             font-size: 14px;
             display: none;
         }
+        
+        .affordability-link {
+            text-align: center;
+            margin-top: 25px;
+            color: var(--secondary);
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: rgba(255, 101, 54, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .affordability-link:hover {
+            background-color: rgba(255, 101, 54, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .affordability-container {
+            display: none;
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 35, 80, 0.1);
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .affordability-container h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .affordability-container p {
+            color: var(--text-light);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 16px;
+        }
+        
+        .affordability-result {
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .affordable {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border-left: 4px solid #28a745;
+        }
+        
+        .caution {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .not-affordable {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+        
+        .section-title::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -10px;
+            width: 50px;
+            height: 3px;
+            background-color: var(--secondary);
+        }
+        
+        .calculator-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -15px;
+        }
+        
+        .calculator-col {
+            flex: 1;
+            padding: 0 15px;
+            min-width: 300px;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-row {
+                flex-direction: column;
+            }
+            
+            .result-details {
+                flex-direction: column;
+            }
+            
+            .result-item {
+                padding: 10px 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="calculator-container">
-        <h1>Loan EMI Calculator</h1>
-        
-        <div class="input-group">
-            <label for="loanAmount">Loan Amount (₹)</label>
-            <input type="number" id="loanAmount" placeholder="Enter loan amount">
-            <div id="loanAmountError" class="error">Please enter a valid loan amount</div>
+    <div class="container">
+        <div class="header">
+            <h1>Loan EMI Calculator</h1>
+            <p>Plan your loan repayments with our simple EMI calculator</p>
         </div>
         
-        <div class="input-group">
-            <label for="interestRate">Annual Interest Rate (%)</label>
-            <input type="number" step="0.01" id="interestRate" placeholder="Enter interest rate">
-            <div id="interestRateError" class="error">Please enter a valid interest rate</div>
+        <div class="calculator-container">
+            <div class="calculator-row">
+                <div class="calculator-col">
+                    <h3 class="section-title">Loan Details</h3>
+                    
+                    <div class="input-group">
+                        <label for="loanAmount">Loan Amount (₹)</label>
+                        <input type="number" id="loanAmount" placeholder="Enter loan amount">
+                        <div id="loanAmountError" class="error">Please enter a valid loan amount</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="interestRate">Annual Interest Rate (%)</label>
+                        <input type="number" step="0.01" id="interestRate" placeholder="Enter interest rate">
+                        <div id="interestRateError" class="error">Please enter a valid interest rate</div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="loanTenure">Loan Tenure (Years)</label>
+                        <input type="number" id="loanTenure" placeholder="Enter loan tenure">
+                        <div id="loanTenureError" class="error">Please enter a valid loan tenure</div>
+                    </div>
+                    
+                    <button onclick="calculateEMI()">Calculate EMI</button>
+                </div>
+                
+                <div class="calculator-col">
+                    <div id="result" class="result">
+                        <h2>Your Monthly EMI</h2>
+                        <div class="emi-amount">₹ <span id="emiAmount">0</span></div>
+                        
+                        <div class="result-details">
+                            <div class="result-item">
+                                <p>Total Principal</p>
+                                <p>₹ <span id="totalPrincipal">0</span></p>
+                            </div>
+                            <div class="result-item">
+                                <p>Total Interest</p>
+                                <p>₹ <span id="totalInterest">0</span></p>
+                            </div>
+                            <div class="result-item">
+                                <p>Total Amount</p>
+                                <p>₹ <span id="totalAmount">0</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="affordability-link" onclick="showAffordabilityCalculator()">
+                            Can I afford this EMI?
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <div class="input-group">
-            <label for="loanTenure">Loan Tenure (Years)</label>
-            <input type="number" id="loanTenure" placeholder="Enter loan tenure">
-            <div id="loanTenureError" class="error">Please enter a valid loan tenure</div>
-        </div>
-        
-        <button onclick="calculateEMI()">Calculate EMI</button>
-        
-        <div id="result" class="result">
-            <h2>Your Monthly EMI</h2>
-            <div class="emi-amount">₹ <span id="emiAmount">0</span></div>
-            <p>Total Amount Payable: ₹ <span id="totalAmount">0</span></p>
-            <p>Total Interest Payable: ₹ <span id="totalInterest">0</span></p>
+        <!-- Affordability Calculator Section -->
+        <div id="affordabilityContainer" class="affordability-container">
+            <h2>EMI Affordability Calculator</h2>
+            <p>Let's check if this EMI is affordable based on your income</p>
+            
+            <div class="input-group">
+                <label for="monthlyIncome">Your Monthly In-hand Income (₹)</label>
+                <input type="number" id="monthlyIncome" placeholder="Enter your monthly income">
+                <div id="incomeError" class="error">Please enter a valid income amount</div>
+            </div>
+            
+            <button onclick="checkAffordability()">Check Affordability</button>
+            
+            <div id="affordableResult" class="affordability-result affordable">
+                <strong>You can comfortably afford this EMI.</strong>
+                <p>Your EMI is less than 40% of your monthly income, which is considered financially healthy.</p>
+            </div>
+            
+            <div id="cautionResult" class="affordability-result caution">
+                <strong>May not be affordable. Be careful.</strong>
+                <p>Your EMI is between 40% and 60% of your monthly income, which might put financial strain on you.</p>
+            </div>
+            
+            <div id="notAffordableResult" class="affordability-result not-affordable">
+                <strong>Not affordable. Do not recommend going ahead.</strong>
+                <p>Your EMI exceeds 60% of your monthly income, which is considered financially risky.</p>
+            </div>
         </div>
     </div>
 
     <script>
+        let currentEmi = 0;
+        
         function calculateEMI() {
             // Reset errors
             document.querySelectorAll('.error').forEach(el => el.style.display = 'none');
@@ -155,30 +408,72 @@
             if (!isValid) return;
             
             // Calculate EMI: P * r * (1+r)^n / ((1+r)^n - 1)
-            // Where P = Principal, r = monthly interest rate, n = number of months
             const monthlyInterestRate = interestRate / 100 / 12;
             const totalMonths = loanTenure * 12;
             
-            // Using both formulas for comparison
-            // Formula 1: P * r * (1+r)^n / ((1+r)^n - 1)
-            const emi1 = loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths) / 
-                         (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
-                         
-            // Formula 2: (P * r * n) / 12
-            const emi2 = (loanAmount * interestRate * loanTenure) / 12;
+            const emi = loanAmount * monthlyInterestRate * Math.pow(1 + monthlyInterestRate, totalMonths) / 
+                       (Math.pow(1 + monthlyInterestRate, totalMonths) - 1);
             
-            // Using the standard formula (emi1) as it's more accurate for loan calculations
-            const emi = emi1;
+            // Save current EMI for affordability check
+            currentEmi = emi;
             
             // Calculate total amount and interest
             const totalAmount = emi * totalMonths;
             const totalInterest = totalAmount - loanAmount;
             
+            // Format numbers with commas for Indian numbering system
+            function formatIndianNumber(num) {
+                return num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+            
             // Display results
-            document.getElementById('emiAmount').textContent = emi.toFixed(2);
-            document.getElementById('totalAmount').textContent = totalAmount.toFixed(2);
-            document.getElementById('totalInterest').textContent = totalInterest.toFixed(2);
+            document.getElementById('emiAmount').textContent = formatIndianNumber(emi);
+            document.getElementById('totalPrincipal').textContent = formatIndianNumber(loanAmount);
+            document.getElementById('totalAmount').textContent = formatIndianNumber(totalAmount);
+            document.getElementById('totalInterest').textContent = formatIndianNumber(totalInterest);
             document.getElementById('result').classList.add('show');
+            
+            // Reset affordability calculator if it's open
+            hideAllAffordabilityResults();
+            document.getElementById('monthlyIncome').value = '';
+        }
+        
+        function showAffordabilityCalculator() {
+            document.getElementById('affordabilityContainer').style.display = 'block';
+            // Scroll to affordability section
+            document.getElementById('affordabilityContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function hideAllAffordabilityResults() {
+            document.getElementById('affordableResult').style.display = 'none';
+            document.getElementById('cautionResult').style.display = 'none';
+            document.getElementById('notAffordableResult').style.display = 'none';
+            document.getElementById('incomeError').style.display = 'none';
+        }
+        
+        function checkAffordability() {
+            hideAllAffordabilityResults();
+            
+            // Get monthly income
+            const monthlyIncome = parseFloat(document.getElementById('monthlyIncome').value);
+            
+            // Validate input
+            if (isNaN(monthlyIncome) || monthlyIncome <= 0) {
+                document.getElementById('incomeError').style.display = 'block';
+                return;
+            }
+            
+            // Calculate EMI percentage of income
+            const emiPercentage = (currentEmi / monthlyIncome) * 100;
+            
+            // Show appropriate result based on thresholds
+            if (emiPercentage <= 40) {
+                document.getElementById('affordableResult').style.display = 'block';
+            } else if (emiPercentage > 40 && emiPercentage <= 60) {
+                document.getElementById('cautionResult').style.display = 'block';
+            } else {
+                document.getElementById('notAffordableResult').style.display = 'block';
+            }
         }
     </script>
 </body>
