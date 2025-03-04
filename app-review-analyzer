@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Review Analyzer | CSV Upload</title>
+    <!-- Keeping the same styling as before -->
+    <style>
+        /* [Previous styles here] */
+        
+        .upload-container {
+            border: 2px dashed var(--border-gray);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-container:hover {
+            border-color: var(--secondary);
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: var(--text-light);
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-button {
+            display: inline-block;
+            background-color: var(--light-blue);
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-button:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .file-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        progress {
+            width: 100%;
+            height: 10px;
+            border-radius: 5px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background-color: var(--light-gray);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:first-child {
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px;
+        }
+        
+        .tab:last-child {
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>App Review Analyzer</h1>
+            <p>Analyze sentiments and keywords from your Play Store and App Store reviews</p>
+        </div>
+        
+        <div class="analyzer-container">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('playStore')">Google Play Store</div>
+                <div class="tab" onclick="switchTab('appStore')">App Store</div>
+            </div>
+            
+            <!-- Play Store Tab Content -->
+            <div id="playStore" class="tab-content active">
+                <h3 class="section-title">Upload Play Store Reviews</h3>
+                <p>Export your reviews CSV from Google Play Console and upload it here for analysis</p>
+                
+                <div class="upload-container" id="playStoreUpload" onclick="triggerFileInput('playStoreCsv')">
+                    <div class="upload-icon">📊</div>
+                    <div class="upload-text">Drag & drop your Play Store reviews CSV here</div>
+                    <label class="upload-button">
+                        Choose File
+                        <input type="file" id="playStoreCsv" class="file-input" accept=".csv" onchange="handleFileSelect(this, 'playStore')">
+                    </label>
+                    <div id="playStoreFileInfo" class="file-info"></div>
+                    <div id="playStoreProgress" class="progress-container">
+                        <progress value="0" max="100"></progress>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="playStoreStartDate">Filter Start Date (Optional)</label>
+                    <input type="date" id="playStoreStartDate">
+                </div>
+                
+                <div class="input-group">
+                    <label for="playStoreEndDate">Filter End Date (Optional)</label>
+                    <input type="date" id="playStoreEndDate">
+                </div>
+                
+                <button id="analyzePlayStoreButton" onclick="analyzePlayStoreReviews()" disabled>Analyze Play Store Reviews</button>
+            </div>
+            
+            <!-- App Store Tab Content -->
+            <div id="appStore" class="tab-content">
+                <h3 class="section-title">Upload App Store Reviews</h3>
+                <p>Export your reviews CSV from App Store Connect and upload it here for analysis</p>
+                
+                <div class="upload-container" id="appStoreUpload" onclick="triggerFileInput('appStoreCsv')">
+                    <div class="upload-icon">📊</div>
+                    <div class="upload-text">Drag & drop your App Store reviews CSV here</div>
+                    <label class="upload-button">
+                        Choose File
+                        <input type="file" id="appStoreCsv" class="file-input" accept=".csv" onchange="handleFileSelect(this, 'appStore')">
+                    </label>
+                    <div id="appStoreFileInfo" class="file-info"></div>
+                    <div id="appStoreProgress" class="progress-container">
+                        <progress value="0" max="100"></progress>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="appStoreStartDate">Filter Start Date (Optional)</label>
+                    <input type="date" id="appStoreStartDate">
+                </div>
+                
+                <div class="input-group">
+                    <label for="appStoreEndDate">Filter End Date (Optional)</label>
+                    <input type="date" id="appStoreEndDate">
+                </div>
+                
+                <button id="analyzeAppStoreButton" onclick="analyzeAppStoreReviews()" disabled>Analyze App Store Reviews</button>
+            </div>
+        </div>
+        
+        <!-- Results container will appear here after analysis -->
+        <div id="resultsContainer" class="results-container">
+            <!-- Similar to previous design but will be populated with real data -->
+        </div>
+    </div>
+
+    <script>
+        // Set default date values (last 30 days)
+        window.onload = function() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            
+            const dateInputs = ['playStoreStartDate', 'playStoreEndDate', 'appStoreStartDate', 'appStoreEndDate'];
+            dateInputs.forEach(id => {
+                const input = document.getElementById(id);
+                if (id.includes('End')) {
+                    input.valueAsDate = today;
+                } else {
+                    input.valueAsDate = thirtyDaysAgo;
+                }
+            });
+            
+            // Setup drag and drop
+            setupDragDrop('playStoreUpload', 'playStoreCsv', 'playStore');
+            setupDragDrop('appStoreUpload', 'appStoreCsv', 'appStore');
+        };
+        
+        // Global variables to store uploaded data
+        let playStoreData = [];
+        let appStoreData = [];
+        
+        function switchTab(tabId) {
+            // Hide all tabs and remove active class
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab and add active class
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        }
+        
+        function triggerFileInput(inputId) {
+            document.getElementById(inputId).click();
+        }
+        
+        function setupDragDrop(dropzoneId, fileInputId, storeType) {
+            const dropzone = document.getElementById(dropzoneId);
+            
+            // Prevent default drag behaviors
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            // Highlight drop zone when item is dragged over it
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropzone.style.borderColor = 'var(--secondary)';
+                dropzone.style.backgroundColor = 'rgba(255, 101, 54, 0.05)';
+            }
+            
+            function unhighlight() {
+                dropzone.style.borderColor = 'var(--border-gray)';
+                dropzone.style.backgroundColor = 'transparent';
+            }
+            
+            // Handle dropped files
+            dropzone.addEventListener('drop', function(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    const fileInput = document.getElementById(fileInputId);
+                    fileInput.files = files;
+                    handleFileSelect(fileInput, storeType);
+                }
+            }, false);
+        }
+        
+        function handleFileSelect(fileInput, storeType) {
+            if (!fileInput.files || !fileInput.files.length) return;
+            
+            const file = fileInput.files[0];
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                alert('Please upload a CSV file');
+                return;
+            }
+            
+            // Update file info
+            const fileInfoElement = document.getElementById(`${storeType}FileInfo`);
+            fileInfoElement.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+            
+            // Show progress
+            const progressContainer = document.getElementById(`${storeType}Progress`);
+            progressContainer.style.display = 'block';
+            
+            // Enable analyze button
+            document.getElementById(`analyze${storeType.charAt(0).toUpperCase() + storeType.slice(1)}Button`).disabled = false;
+            
+            // Read and parse the file
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const csvData = e.target.result;
+                
+                // Parse CSV data
+                if (storeType === 'playStore') {
+                    playStoreData = parsePlayStoreCSV(csvData);
+                } else {
+                    appStoreData = parseAppStoreCSV(csvData);
+                }
+                
+                // Update progress to 100%
+                const progressBar = progressContainer.querySelector('progress');
+                progressBar.value = 100;
+            };
+            
+            reader.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const progressBar = progressContainer.querySelector('progress');
+                    progressBar.value = (e.loaded / e.total) * 100;
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function parsePlayStoreCSV(csvData) {
+            // Split the CSV into lines
+            const lines = csvData.split('\n');
+            
+            // Extract headers (first line)
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+            
+            // Map header indices
+            const reviewIndex = headers.findIndex(h => h.toLowerCase().includes('review'));
+            const ratingIndex = headers.findIndex(h => h.toLowerCase().includes('rating') || h.toLowerCase().includes('star'));
+            const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
+            const userIndex = headers.findIndex(h => h.toLowerCase().includes('user') || h.toLowerCase().includes('reviewer'));
+            
+            // Process each line
+            const reviews = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                // Handle commas within quoted fields
+                const values = [];
+                let currentValue = '';
+                let inQuotes = false;
+                
+                for (let char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue.replace(/^"|"$/g, ''));
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.replace(/^"|"$/g, ''));
+                
+                // Create review object
+                const review = {
+                    text: reviewIndex >= 0 ? values[reviewIndex] : '',
+                    rating: ratingIndex >= 0 ? parseInt(values[ratingIndex]) : 0,
+                    date: dateIndex >= 0 ? values[dateIndex] : '',
+                    user: userIndex >= 0 ? values[userIndex] : `User ${i}`
+                };
+                
+                reviews.push(review);
+            }
+            
+            return reviews;
+        }
+        
+        function parseAppStoreCSV(csvData) {
+            // Similar to parsePlayStoreCSV but adjusted for App Store format
+            // The actual implementation would depend on the App Store CSV format
+            // This is a simplified version
+            
+            const lines = csvData.split('\n');
+            const headers = lines[0].split(',').map(header => header.trim().replace(/^"|"$/g, ''));
+            
+            const reviewIndex = headers.findIndex(h => h.toLowerCase().includes('review') || h.toLowerCase().includes('comment'));
+            const ratingIndex = headers.findIndex(h => h.toLowerCase().includes('rating') || h.toLowerCase().includes('star'));
+            const dateIndex = headers.findIndex(h => h.toLowerCase().includes('date'));
+            const userIndex = headers.findIndex(h => h.toLowerCase().includes('user') || h.toLowerCase().includes('author'));
+            
+            const reviews = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                // Handle commas within quoted fields
+                const values = [];
+                let currentValue = '';
+                let inQuotes = false;
+                
+                for (let char of lines[i]) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(currentValue.replace(/^"|"$/g, ''));
+                        currentValue = '';
+                    } else {
+                        currentValue += char;
+                    }
+                }
+                values.push(currentValue.replace(/^"|"$/g, ''));
+                
+                const review = {
+                    text: reviewIndex >= 0 ? values[reviewIndex] : '',
+                    rating: ratingIndex >= 0 ? parseInt(values[ratingIndex]) : 0,
+                    date: dateIndex >= 0 ? values[dateIndex] : '',
+                    user: userIndex >= 0 ? values[userIndex] : `User ${i}`
+                };
+                
+                reviews.push(review);
+            }
+            
+            return reviews;
+        }
+        
+        function analyzePlayStoreReviews() {
+            if (!playStoreData.length) {
+                alert('No data available. Please upload a CSV file first.');
+                return;
+            }
+            
+            // Filter by date if specified
+            const startDate = document.getElementById('playStoreStartDate').valueAsDate;
+            const endDate = document.getElementById('playStoreEndDate').valueAsDate;
+            
+            let filteredData = playStoreData;
+            if (startDate && endDate) {
+                filteredData = playStoreData.filter(review => {
+                    const reviewDate = new Date(review.date);
+                    return reviewDate >= startDate && reviewDate <= endDate;
+                });
+            }
+            
+            // Calculate sentiments based on ratings
+            const sentiments = analyzeSentiments(filteredData);
+            
+            // Extract keywords from review text
+            const keywords = extractKeywords(filteredData);
+            
+            // Display results
+            displayResults('playStore', filteredData, sentiments, keywords);
+        }
+        
+        function analyzeAppStoreReviews() {
+            if (!appStoreData.length) {
+                alert('No data available. Please upload a CSV file first.');
+                return;
+            }
+            
+            // Similar to analyzePlayStoreReviews
+            const startDate = document.getElementById('appStoreStartDate').valueAsDate;
+            const endDate = document.getElementById('appStoreEndDate').valueAsDate;
+            
+            let filteredData = appStoreData;
+            if (startDate && endDate) {
+                filteredData = appStoreData.filter(review => {
+                    const reviewDate = new Date(review.date);
+                    return reviewDate >= startDate && reviewDate <= endDate;
+                });
+            }
+            
+            const sentiments = analyzeSentiments(filteredData);
+            const keywords = extractKeywords(filteredData);
+            
+            displayResults('appStore', filteredData, sentiments, keywords);
+        }
+        
+        function analyzeSentiments(reviews) {
+            // Simple sentiment analysis based on star ratings
+            const sentiments = {
+                positive: 0,
+                neutral: 0,
+                negative: 0,
+                average: 0
+            };
+            
+            let totalRating = 0;
+            
+            reviews.forEach(review => {
+                totalRating += review.rating;
+                
+                if (review.rating >= 4) {
+                    sentiments.positive++;
+                } else if (review.rating === 3) {
+                    sentiments.neutral++;
+                } else {
+                    sentiments.negative++;
+                }
+            });
+            
+            // Calculate percentages
+            const total = reviews.length;
+            sentiments.positive = Math.round((sentiments.positive / total) * 100);
+            sentiments.neutral = Math.round((sentiments.neutral / total) * 100);
+            sentiments.negative = Math.round((sentiments.negative / total) * 100);
+            sentiments.average = totalRating / total;
+            
+            return sentiments;
+        }
+        
+        function extractKeywords(reviews) {
+            // Common words to exclude
+            const stopWords = new Set([
+                'the', 'and', 'a', 'to', 'is', 'in', 'that', 'it', 'with', 'for', 'as', 
+                'on', 'was', 'be', 'at', 'this', 'have', 'from', 'or', 'but', 'not', 'by',
+                'an', 'are', 'they', 'you', 'i', 'of', 'my', 'app', 'has', 'can', 'so'
+            ]);
+            
+            // Extract all words from reviews
+            const wordCounts = {};
+            const functionalPhrases = [];
+            
+            // Patterns to look for functional issues
+            const functionalPatterns = [
+                /crash(es|ed|ing)?/i,
+                /bug(s|gy)?/i,
+                /doesn't work/i,
+                /not working/i,
+                /add (a |an |the )?([a-z]+)/i,
+                /need (a |an |the )?([a-z]+)/i,
+                /missing ([a-z]+)/i,
+                /can't ([a-z]+)/i,
+                /error/i,
+                /slow/i,
+                /lag(s|gy|ging)?/i,
+                /feature request/i,
+                /payment (issue|problem)/i,
+                /login (issue|problem)/i
+            ];
+            
+            reviews.forEach(review => {
+                if (!review.text) return;
+                
+                // Look for functional phrases
+                functionalPatterns.forEach(pattern => {
+                    const match = review.text.match(pattern);
+                    if (match) {
+                        let phrase = match[0].toLowerCase();
+                        // Clean up the phrase
+                        phrase = phrase.replace(/[^\w\s]/gi, '').trim();
+                        
+                        if (phrase && phrase.length > 3) {
+                            const existingIndex = functionalPhrases.findIndex(p => p.text === phrase);
+                            if (existingIndex >= 0) {
+                                functionalPhrases[existingIndex].count++;
+                            } else {
+                                functionalPhrases.push({ text: phrase, count: 1 });
+                            }
+                        }
+                    }
+                });
+                
+                // Count all words
+                const words = review.text.toLowerCase()
+                    .replace(/[^\w\s]/gi, '')
+                    .split(/\s+/);
+                
+                words.forEach(word => {
+                    if (word && word.length > 3 && !stopWords.has(word)) {
+                        wordCounts[word] = (wordCounts[word] || 0) + 1;
+                    }
+                });
+            });
+            
+            // Convert to array and sort by count
+            const keywordArray = Object.entries(wordCounts)
+                .map(([text, count]) => ({ text, count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 10);
+            
+            // Combine functional phrases with top keywords
+            const combined = [...functionalPhrases]
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 15);
+            
+            // Add top keywords that aren't already covered by phrases
+            keywordArray.forEach(keyword => {
+                if (combined.length < 20 && !combined.some(p => p.text.includes(keyword.text))) {
+                    combined.push(keyword);
+                }
+            });
+            
+            return combined.sort((a, b) => b.count - a.count);
+        }
+        
+        function displayResults(storeType, reviews, sentiments, keywords) {
+            // Create the results HTML
+            const storeTitle = storeType === 'playStore' ? 'Google Play Store' : 'App Store';
+            const storeIconClass = storeType === 'playStore' ? 'google-play-icon' : 'app-store-icon';
+            
+            // Create empty results container if it doesn't exist
+            if (!document.getElementById('resultsContainer').innerHTML) {
+                document.getElementById('resultsContainer').innerHTML = '';
+            }
+            
+            // Create the store results section if it doesn't exist
+            let storeResultsElement = document.getElementById(`${storeType}Results`);
+            if (!storeResultsElement) {
+                storeResultsElement = document.createElement('div');
+                storeResultsElement.id = `${storeType}Results`;
+                storeResultsElement.className = 'store-results';
+                document.getElementById('resultsContainer').appendChild(storeResultsElement);
+            }
+            
+            // Populate the results
+            storeResultsElement.innerHTML = `
+                <div class="store-header">
+                    <div class="store-icon ${storeIconClass}"></div>
+                    <h3>${storeTitle} Analysis</h3>
+                </div>
+                
+                <div class="sentiment-box">
+                    <div class="sentiment-card average-rating">
+                        <div class="sentiment-title">Average Rating</div>
+                        <div class="sentiment-value">${sentiments.average.toFixed(1)}</div>
+                    </div>
+                    <div class="sentiment-card positive-sentiment">
+                        <div class="sentiment-title">Positive</div>
+                        <div class="sentiment-value">${sentiments.positive}%</div>
+                    </div>
+                    <div class="sentiment-card neutral-sentiment">
+                        <div class="sentiment-title">Neutral</div>
+                        <div class="sentiment-value">${sentiments.neutral}%</div>
+                    </div>
+                    <div class="sentiment-card negative-sentiment">
+                        <div class="sentiment-title">Negative</div>
+                        <div class="sentiment-value">${sentiments.negative}%</div>
+                    </div>
+                </div>
+                
+                <div class="keywords-container">
+                    <div class="keyword-title">Top Keywords & Functional Issues</div>
+                    <div class="keywords-list">
+                        ${keywords.map(keyword => `
+                            <div class="keyword-tag">
+                                ${keyword.text}
+                                <span class="keyword-count">${keyword.count}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="review-sample">
+                    <div class="review-title">Sample Reviews</div>
+                    ${getSampleReviews(reviews)}
+                </div>
+            `;
+            
+            // Show results container
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function getSampleReviews(reviews) {
+            // Get a mix of positive, neutral, and negative reviews
+            const positiveReviews = reviews.filter(review => review.rating >= 4).slice(0, 3);
+            const neutralReviews = reviews.filter(review => review.rating === 3).slice(0, 2);
+            const negativeReviews = reviews.filter(review => review.rating <= 2).slice(0, 3);
+            
+            // Combine and sort by recency
+            const sampleReviews = [...positiveReviews, ...neutralReviews, ...negativeReviews]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+            
+            return sampleReviews.map(review => {
+                let sentimentClass = 'review-neutral';
+                if (review.rating >= 4) sentimentClass = 'review-positive';
+                if (review.rating <= 2) sentimentClass = 'review-negative';
+                
+                return `
+                    <div class="review-card ${sentimentClass}">
+                        <div class="review-header">
+                            <div class="reviewer-name">${review.user}</div>
+                            <div class="review-date">${formatDate(review.date)}</div>
+                        </div>
+                        <div class="review-rating">
+                            ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}
+                        </div>
+                        <div class="review-text">${review.text}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function formatDate(dateString) {
+            // Handle various date formats
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {
+                return dateString;
+            }
+        }
+    </script>
+</body>
+</html>
