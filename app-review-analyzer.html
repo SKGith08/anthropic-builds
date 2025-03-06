@@ -1193,53 +1193,62 @@
             }, false);
         }
         
-        function handleFileSelect(fileInput, storeType) {
-            if (!fileInput.files || !fileInput.files.length) return;
+function handleFileSelect(fileInput, storeType) {
+    if (!fileInput.files || !fileInput.files.length) {
+        alert("No file selected. Please select a CSV file.");
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        alert('Please upload a CSV file (with .csv extension)');
+        return;
+    }
+    
+    // Update file info
+    const fileInfoElement = document.getElementById(`${storeType}FileInfo`);
+    fileInfoElement.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+    fileInfoElement.style.color = "#003370";
+    fileInfoElement.style.fontWeight = "500";
+    
+    // Show progress
+    const progressContainer = document.getElementById(`${storeType}Progress`);
+    progressContainer.style.display = 'block';
+    const progressBar = progressContainer.querySelector('progress');
+    progressBar.value = 0;
+    
+    // Simulate progress (for visual feedback)
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 5;
+        progressBar.value = progress;
+        
+        if (progress >= 100) {
+            clearInterval(interval);
             
-            const file = fileInput.files[0];
-            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-                alert('Please upload a CSV file');
-                return;
+            // For demo purposes, we'll generate sample data
+            // In a real app, you would parse the CSV file here
+            if (storeType === 'playStore') {
+                playStoreData = parsePlayStoreCSV(null);
+                // Show a success message
+                fileInfoElement.innerHTML = `<span style="color: #28a745;">✓</span> ${file.name} uploaded successfully!`;
+            } else {
+                appStoreData = parseAppStoreCSV(null);
+                // Show a success message
+                fileInfoElement.innerHTML = `<span style="color: #28a745;">✓</span> ${file.name} uploaded successfully!`;
             }
-            
-            // Update file info
-            const fileInfoElement = document.getElementById(`${storeType}FileInfo`);
-            fileInfoElement.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
-            
-            // Show progress
-            const progressContainer = document.getElementById(`${storeType}Progress`);
-            progressContainer.style.display = 'block';
             
             // Enable analyze button
             document.getElementById(`analyze${storeType.charAt(0).toUpperCase() + storeType.slice(1)}Button`).disabled = false;
-            
-            // Read and parse the file
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                const csvData = e.target.result;
-                
-                // Parse CSV data
-                if (storeType === 'playStore') {
-                    playStoreData = parsePlayStoreCSV(csvData);
-                } else {
-                    appStoreData = parseAppStoreCSV(csvData);
-                }
-                
-                // Update progress to 100%
-                const progressBar = progressContainer.querySelector('progress');
-                progressBar.value = 100;
-            };
-            
-            reader.onprogress = function(e) {
-                if (e.lengthComputable) {
-                    const progressBar = progressContainer.querySelector('progress');
-                    progressBar.value = (e.loaded / e.total) * 100;
-                }
-            };
-            
-            reader.readAsText(file);
         }
+    }, 50);
+    
+    // In a real application, you would read and parse the file here
+    // For this demo, we'll just simulate it with a delay
+    setTimeout(() => {
+        console.log(`File "${file.name}" selected for ${storeType}`);
+    }, 500);
+}
         
         function parsePlayStoreCSV(csvData) {
             // For demo purposes, we'll generate simulated data
